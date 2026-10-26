@@ -29,14 +29,14 @@ powershell -ExecutionPolicy Bypass -File .\diag6_targets.ps1 -Names '*Quark*','*
 
 ## 脚本清单
 
-| 脚本 | 检查内容 | 重点关注 |
-|---|---|---|
-| `diag1_hardware.ps1` | 物理磁盘 SMART / 分区空间 / 内存与页面文件 / Top15 内存进程 | HealthStatus 非 Healthy、系统盘剩余 <10% |
-| `diag2_startup.ps1` | 电源计划 / 自启项（注册表+任务管理器批准列表）/ 非微软自动服务 / 待装更新 / 电池设计容量对比 | 不明自启项、电池损耗 |
-| `diag3_security.ps1` | 注册杀软 / Run 键 / 休眠与快速启动 / HAGS / Defender 状态 / Temp 缓存 / 厂商计划任务（`-TaskPatterns` 可配） | 实时保护关闭、病毒库过期、缓存异常大 |
-| `diag4_system.ps1` | 管理员身份 / 内存条详情（双通道/频率）/ 页面文件 / 待重启标记 / 14 天错误事件 Top 来源 / 磁盘读写延迟 / 运行时长 | RebootPending、高频错误来源、延迟 >5ms |
-| `diag5_gpu_errors.ps1` | 显卡驱动错误专项（`-Providers` 默认 nvlddmkm，`-Days` 默认 14）+ Schannel 错误 | 驱动重置事件量（多则需要重装驱动/DDU 清洁安装） |
-| `diag6_targets.ps1` | 定向排查：`-Names` 点名的进程 / 计划任务 / 已安装产品 | 卸载残留、常驻更新器 |
+## 脚本清单
+
+- **`diag1_hardware.ps1`** —— 物理磁盘 SMART / 分区空间 / 内存与页面文件 / Top15 内存进程。**重点看**：HealthStatus 非 Healthy、系统盘剩余 <10%。
+- **`diag2_startup.ps1`** —— 电源计划 / 自启项（注册表 + 任务管理器批准列表）/ 非微软自动服务 / 待装更新 / 电池设计容量对比。**重点看**：不明自启项、电池损耗。
+- **`diag3_security.ps1`** —— 注册杀软 / Run 键 / 休眠与快速启动 / HAGS / Defender 状态 / Temp 缓存 / 厂商计划任务（`-TaskPatterns` 可配）。**重点看**：实时保护关闭、病毒库过期、缓存异常大。
+- **`diag4_system.ps1`** —— 管理员身份 / 内存条详情（双通道、频率）/ 页面文件 / 待重启标记 / 14 天错误事件 Top 来源 / 磁盘读写延迟 / 运行时长。**重点看**：RebootPending、高频错误来源、延迟 >5ms。
+- **`diag5_gpu_errors.ps1`** —— 显卡驱动错误专项（`-Providers` 默认 nvlddmkm，`-Days` 默认 14）+ Schannel 错误。**重点看**：驱动重置事件量，多则需 DDU 清洁安装。
+- **`diag6_targets.ps1`** —— 定向排查：`-Names` 点名的进程 / 计划任务 / 已安装产品。**重点看**：卸载残留、常驻更新器。
 
 ## 怎么读报告
 
