@@ -6,6 +6,10 @@
 
 ## 用法
 
+`diag1_hardware.ps1` 的实际输出（本机真实运行，无任何改动）：
+
+![diag1 硬件诊断输出](docs/shot-diag1.png)
+
 ```powershell
 # 一键体检（diag1~5），报告自动保存为 体检报告-<日期>.txt
 powershell -ExecutionPolicy Bypass -File .\run_all.ps1
