@@ -1,5 +1,7 @@
 # windows-healthcheck · Windows 一键体检脚本集
 
+![CI](https://github.com/Leslieryin/windows-healthcheck/actions/workflows/ci.yml/badge.svg)
+
 一组**只读**的 PowerShell 诊断脚本，覆盖笔记本/台式机日常体检的主要方面：硬件健康、启动项、安全软件状态、系统稳定性、显卡驱动错误。不改系统、不删文件，跑完生成可留档对比的文本报告。
 
 来自一次真实的笔记本体检（联想 + RTX 显卡 + 国产软件全家桶环境），脚本按「能回答真实问题」的标准写：磁盘 SMART 好不好、内存是不是双通道满速、显卡驱动 14 天内崩了几次、哪些软件在开机自启、C 盘还剩多少。
@@ -26,8 +28,6 @@ powershell -ExecutionPolicy Bypass -File .\diag6_targets.ps1 -Names '*Quark*','*
 ```
 
 > 部分 CIM 查询与事件日志需要管理员权限才有完整结果；以管理员身份运行 PowerShell 效果最佳（diag4 会自报是否管理员）。
-
-## 脚本清单
 
 ## 脚本清单
 
