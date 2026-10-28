@@ -86,9 +86,11 @@ $script:FakeDisks = @(
                        OperationalStatus = 'OK'; Size = 536870912000 }       # 500 GB
 )
 $out = Invoke-Diag
-Assert-True '2TB 换算成 2048 GB' ($out -match 'DiskA.+?2048') `
+Assert-True '2TB 换算成 2048 GB' ($out -match 'DiskA.*?2048') `
     '分母写错（比如 /1MB）时会显示 2097152，不报错'
-Assert-True '500GB 换算成 500 GB' ($out -match 'DiskB.+?\s500\s')
+# 不要求尾部空格：PS 7 的 Format-Table 会裁掉行尾空白，PS 5.1 会保留，
+# 写成 '\s500\s' 会在 PS 7 下假失败
+Assert-True '500GB 换算成 500 GB' ($out -match 'DiskB.*?500')
 Assert-True 'Warning 健康状态原样透传' ($out -match 'Warning')
 Assert-True '四节标题都在' (
     $out -match '=== Physical Disks ===' -and
