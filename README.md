@@ -40,6 +40,26 @@ powershell -ExecutionPolicy Bypass -File .\diag6_targets.ps1 -Names '*Quark*','*
 - **`diag5_gpu_errors.ps1`** —— 显卡驱动错误专项（`-Providers` 默认 nvlddmkm，`-Days` 默认 14）+ Schannel 错误。**重点看**：驱动重置事件量，多则需 DDU 清洁安装。
 - **`diag6_targets.ps1`** —— 定向排查：`-Names` 点名的进程 / 计划任务 / 已安装产品。**重点看**：卸载残留、常驻更新器。
 
+## 测试
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tests\test-diag1.ps1
+```
+
+诊断脚本没有纯函数，全是直接取数的管道，没法单独调某个函数来测。所以用同名函数遮蔽真实 cmdlet（PowerShell 里函数优先于 cmdlet），喂假硬件数据进去，再 dot-source 被测脚本。不需要 Pester，PowerShell 5.1 就能跑。
+
+12 项断言，专门抓那些**写错了也不报错**的地方：
+
+- 2TB 显示成 2048 GB（分母误写成 `/1MB` 会显示 2097152，看着是数字但全错）
+- 分区 500 GB 总量、已用 300、剩余 200
+- 内存汇总的 KB→GB 换算（写成 `/1GB` 会得到 32768.0）
+- 给 20 个进程只输出 15 行，且按内存降序
+- 什么都取不到时不抛异常（脚本靠 `SilentlyContinue` 兜底，缺硬件应该少几行而不是崩）
+
+CI 另外会验收 `run_all.ps1` 生成的报告：必须是 **UTF-8**（不是 UTF-16）、不能有未渲染的格式对象（`FormatStartData` 之类）、五节标记齐全。
+
+> 报告编码这件事值得单说：`Tee-Object` 在 PowerShell 5.1 下写出的是 UTF-16LE，`git diff` 会把它当二进制、不少编辑器打开是乱码，留档对比基本没法用。`run_all.ps1` 里换成了自己实现的 tee，统一写 UTF-8 无 BOM。
+
 ## 怎么读报告
 
 1. 先看 diag1 的磁盘 HealthStatus 和 diag4 的错误事件 Top 来源——这两处最能暴露真问题
