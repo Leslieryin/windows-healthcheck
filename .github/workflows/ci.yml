@@ -60,6 +60,14 @@ jobs:
           }
           if ($failed -gt 0) { throw "$failed 个脚本运行失败" }
 
+      - name: 注入假数据验证算得对（tests/）
+        shell: pwsh
+        run: |
+          # 上面那步只证明"能跑出字"，这步证明"算出来的数是对的"。
+          # 用同名函数遮蔽真实 cmdlet 喂假硬件数据，不需要 Pester。
+          ./tests/test-diag1.ps1
+          if ($LASTEXITCODE -ne 0) { throw "tests/test-diag1.ps1 失败" }
+
       - name: run_all 能跑完并落盘报告
         shell: pwsh
         run: |
@@ -68,6 +76,38 @@ jobs:
           if (-not $report) { throw "run_all 没有生成报告文件" }
           Write-Host "报告已生成: $($report.Name)，$($report.Length) 字节"
           if ($report.Length -lt 500) { throw "报告内容过短，可能没跑到各诊断项" }
+
+      - name: 报告必须是 UTF-8 且内容完整
+        shell: pwsh
+        run: |
+          $report = Get-ChildItem -Filter '体检报告-*.txt' | Select-Object -First 1
+
+          # Tee-Object 在 PowerShell 5.1 下写出的是 UTF-16LE：
+          # git diff 会当成二进制，不少编辑器打开是乱码，留档对比没法用。
+          $bytes = [System.IO.File]::ReadAllBytes($report.FullName)
+          if ($bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) {
+            throw "报告是 UTF-16LE，期望 UTF-8"
+          }
+          Write-Host "编码检查通过（非 UTF-16）"
+
+          $lines = [System.IO.File]::ReadAllLines($report.FullName, [System.Text.UTF8Encoding]::new($false))
+          Write-Host "总行数: $($lines.Count)"
+
+          # 自己实现 tee 时踩过的坑：Format-Table 输出的是格式对象，
+          # 直接转字符串会变成类型名，报告里只剩一堆 FormatStartData。
+          $bad = $lines | Where-Object { $_ -match 'Format(Start|Entry|End)Data|Microsoft\.PowerShell\.Commands' }
+          if ($bad) {
+            throw "报告里有 $($bad.Count) 处未渲染的格式对象，说明 tee 没先 Out-String -Stream"
+          }
+          Write-Host "无格式对象残留 ✓"
+
+          # 五节标记都得在
+          foreach ($tag in 'diag1_hardware','diag2_startup','diag3_security','diag4_system','diag5_gpu_errors') {
+            if (-not ($lines | Where-Object { $_ -match $tag })) {
+              throw "报告里缺 $tag 这一节"
+            }
+          }
+          Write-Host "五节齐全 ✓"
 
   readonly:
     name: 只读承诺
