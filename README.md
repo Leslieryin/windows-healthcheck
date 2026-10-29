@@ -10,9 +10,9 @@
 
 ## 用法
 
-`diag1_hardware.ps1` 的实际输出（本机真实运行，无任何改动）：
+`run_all.ps1` 的实际运行（本机真实数据，无任何改动）：
 
-![diag1 硬件诊断输出](docs/shot-diag1.png)
+![powershell -File .\run_all.ps1 的真实输出：磁盘健康、分区空间、内存占用与进程 Top15](docs/demo.gif)
 
 ```powershell
 # 一键体检（diag1~5），报告自动保存为 体检报告-<日期>.txt
