@@ -1,7 +1,8 @@
 ﻿# run_all.ps1 · 一键体检：依次运行 diag1~diag5（diag6 为定向排查，按需手动跑），
 # 全部输出同时写入 体检报告-<日期>.txt，方便留档对比。
 param(
-    [string[]]$GpuProviders = @('nvlddmkm')
+    [string[]]$GpuProviders = @('nvlddmkm'),
+    [string[]]$TaskPatterns = @('*Update*', '*Launcher*', '*Agent*')
 )
 $ErrorActionPreference = 'SilentlyContinue'
 
@@ -48,7 +49,7 @@ Write-Utf8 "`n`n########## diag2_startup ##########" $report -Append
 & (Join-Path $here 'diag2_startup.ps1') | Out-String -Stream | Tee-Report -Path $report -Append
 
 Write-Utf8 "`n`n########## diag3_security ##########" $report -Append
-& (Join-Path $here 'diag3_security.ps1') | Out-String -Stream | Tee-Report -Path $report -Append
+& (Join-Path $here 'diag3_security.ps1') -TaskPatterns $TaskPatterns | Out-String -Stream | Tee-Report -Path $report -Append
 
 Write-Utf8 "`n`n########## diag4_system ##########" $report -Append
 & (Join-Path $here 'diag4_system.ps1') | Out-String -Stream | Tee-Report -Path $report -Append

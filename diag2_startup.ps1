@@ -10,8 +10,21 @@ Write-Output '=== Startup (approved) ==='
 Get-CimInstance Win32_StartupCommand | Select-Object Name,Command,Location | Format-Table -Wrap -AutoSize
 
 Write-Output '=== Startup Apps (TaskManager list) ==='
-Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run' | Format-List
-Get-ItemProperty 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run' | Format-List
+# StartupApproved：值首字节 02=启用 03=禁用；翻译成人话并排除 PS* 元数据属性
+foreach ($hive in 'HKCU:', 'HKLM:') {
+    $k = "$hive\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+    $props = Get-ItemProperty $k -ErrorAction SilentlyContinue
+    if ($props) {
+        "[$k]"
+        $props.PSObject.Properties | Where-Object { $_.Name -notlike 'PS*' } | ForEach-Object {
+            $b = $_.Value
+            if ($b -is [byte[]] -and $b.Length -gt 0) {
+                $state = if ($b[0] -band 1) { 'Disabled' } else { 'Enabled' }
+                "  {0} = {1}" -f $_.Name, $state
+            } else { "  {0} = {1}" -f $_.Name, $_.Value }
+        }
+    }
+}
 
 Write-Output '=== Non-Microsoft running services (auto) ==='
 Get-CimInstance Win32_Service | Where-Object { $_.State -eq 'Running' -and $_.PathName -notlike '*\Windows\*' } | Select-Object Name,DisplayName,StartMode | Format-Table -AutoSize

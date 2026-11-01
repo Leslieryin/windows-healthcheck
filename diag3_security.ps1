@@ -18,7 +18,8 @@ powercfg /a
 
 Write-Output '=== HAGS (hardware GPU scheduling) ==='
 $hags = Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers' -Name HwSchMode
-"HwSchMode = $($hags.HwSchMode)  (2=on, 1=off)"
+if ($null -ne $hags.HwSchMode) { "HwSchMode = $($hags.HwSchMode)  (2=on, 1=off)" }
+else { "HwSchMode = not set (硬件不支持或不支持此功能)" }
 
 Write-Output '=== Defender status ==='
 Get-MpComputerStatus | Select-Object AMServiceEnabled,RealTimeProtectionEnabled,AntivirusEnabled,AntivirusSignatureLastUpdated,QuickScanEndTime | Format-List
@@ -30,7 +31,10 @@ foreach ($p in @("$env:TEMP", 'C:\Windows\Temp', 'C:\Windows\SoftwareDistributio
 }
 
 Write-Output '=== Memory compression / SysMain ==='
-Get-Service MemCompression,SysMain | Select-Object Name,Status,StartType | Format-Table -AutoSize
+$memc = Get-Service MemCompression -ErrorAction SilentlyContinue
+if ($memc) { $memc | Select-Object Name,Status,StartType | Format-Table -AutoSize }
+else { "MemCompression = not found (该 Windows 版本无此独立服务)" }
+Get-Service SysMain -ErrorAction SilentlyContinue | Select-Object Name,Status,StartType | Format-Table -AutoSize
 
 Write-Output "=== Vendor scheduled tasks (patterns: $($TaskPatterns -join ', ')) ==="
 Get-ScheduledTask -TaskName $TaskPatterns | Where-Object { $_.State -ne 'Disabled' } | Select-Object TaskName,State | Format-Table -AutoSize
@@ -39,9 +43,11 @@ Write-Output '=== Storage Sense ==='
 Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy' | Out-String
 
 Write-Output '=== Game Mode ==='
-$gm = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\GameBar' -Name AutoGameModeEnabled,AllowAutoGameMode
-"AutoGameModeEnabled = $($gm.AutoGameModeEnabled)"
+$gm = Get-ItemProperty 'HKCU:\Software\Microsoft\GameBar' -Name AutoGameModeEnabled,AllowAutoGameMode
+if ($null -ne $gm.AutoGameModeEnabled) { "AutoGameModeEnabled = $($gm.AutoGameModeEnabled)  (1/2 分级)" }
+else { "AutoGameModeEnabled = not set (系统默认启用)" }
 
 Write-Output '=== Visual effects ==='
 $ve = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects'
-"VisualFXSetting = $($ve.VisualFXSetting) (0=custom,1=best appearance,2=best performance,3=let windows decide)"
+if ($null -ne $ve.VisualFXSetting) { "VisualFXSetting = $($ve.VisualFXSetting) (0=custom,1=best appearance,2=best performance,3=let windows decide)" }
+else { "VisualFXSetting = not set (系统默认)" }

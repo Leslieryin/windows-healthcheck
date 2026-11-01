@@ -12,7 +12,7 @@ foreach ($n in $Names) {
     Get-Process -Name $n | Select-Object -First 5 Name,Id,Path | Format-Table -AutoSize
 
     Write-Output "=== Scheduled tasks matching '$n' ==="
-    $tasks = Get-ScheduledTask -TaskName $n
+    $tasks = Get-ScheduledTask -TaskName $n -ErrorAction SilentlyContinue
     $tasks | Select-Object TaskName,TaskPath,State | Format-Table -AutoSize
     $tasks | ForEach-Object {
         "  [$($_.TaskName)] Actions:"
